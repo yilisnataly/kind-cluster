@@ -1,0 +1,60 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: foo-app
+  labels:
+    app: http-echo
+spec:
+  containers:
+  - name: foo-app
+    image: hashicorp/http-echo:0.2.3
+    args:
+    - "-text=hello: world"
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: bar-app
+  labels:
+    app: http-echo
+spec:
+  containers:
+  - name: bar-app
+    image: hashicorp/http-echo:0.2.3
+    args:
+    - "-text=bar"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: foo-service
+spec:
+  selector:
+    app: http-echo
+  ports:
+  - port: 8081
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: hello.wefox.localhost
+    - http:
+        paths:
+          - pathType: Prefix
+            path: "/foo"
+            backend:
+              service:
+                name: foo-service
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: "/bar"
+            backend:
+              service:
+                name: bar-service
+                port:
+                  number: 8081
